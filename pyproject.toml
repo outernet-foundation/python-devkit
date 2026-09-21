@@ -12,6 +12,7 @@ dependencies = [
 
 [project.scripts]
 lock-python = "python_devkit.lock_python:app"
+sync-ruff = "python_devkit.sync_ruff:app"
 
 [dependency-groups]
 dev = ["basedpyright>=1.39.10", "ruff>=0.14.11"]
@@ -22,7 +23,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/python_devkit"]
-include = ["src/python_devkit/py.typed"]
+include = ["src/python_devkit/py.typed", "src/python_devkit/ruff.base.toml"]
 
 [tool.uv.sources]
 
