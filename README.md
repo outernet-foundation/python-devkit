@@ -38,6 +38,17 @@ run_checks([
 
 `CommandCheck` wraps a shell command in a labeled CI step group; `GeneratedCheck` additionally guards the checked-in generator output with a git-status staleness check (diff shown, fix command named). Checks run fail-fast with per-step durations in the Actions step summary.
 
+## ruff canonical config
+
+`src/python_devkit/ruff.base.toml` is the org-canonical ruff configuration. Consuming repos carry it verbatim as `ruff.base.toml` at their root, with a hand-owned `ruff.toml` beside it layering repo-local deltas on top:
+
+```bash
+uvx --from python-devkit sync-ruff           # write/refresh ruff.base.toml
+uvx --from python-devkit sync-ruff --check   # drift gate: exit 1 on divergence
+```
+
+The consuming `ruff.toml` must set `extend = "ruff.base.toml"` and may only add via extend keys (`extend-exclude`, `lint.extend-ignore`, `lint.extend-per-file-ignores`) — plain `exclude`, `lint.select`, `lint.ignore`, and `lint.per-file-ignores` replace the canonical settings under `extend`, and `--check` fails on them. To change the canonical: edit it here, release, and run `sync-ruff` in every consuming repo.
+
 ## Development
 
 Requires Python 3.13+ and [uv](https://docs.astral.sh/uv/).
