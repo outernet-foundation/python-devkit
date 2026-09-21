@@ -1,13 +1,9 @@
 [project]
 name = "python-devkit"
 version = "0.0.0.dev0"
-description = "Python repo-lifecycle tooling: CI step wrapper, runner provisioning, workspace locking, preflight checks"
+description = "Python repo-lifecycle tooling: workspace locking, preflight checks, canonical ruff configuration"
 requires-python = ">=3.13"
-dependencies = [
-    "bashrun>=0.1.0",
-    "pydantic>=2.11.7",
-    "pydantic-settings>=2.9.1",
-]
+dependencies = []
 
 [dependency-groups]
 dev = ["basedpyright>=1.39.10", "ruff>=0.14.11"]
@@ -18,7 +14,7 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/python_devkit"]
-include = ["src/python_devkit/py.typed", "src/python_devkit/third-party/**"]
+include = ["src/python_devkit/py.typed"]
 
 [tool.uv.sources]
 
