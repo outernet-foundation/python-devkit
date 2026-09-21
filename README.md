@@ -18,6 +18,26 @@ For every workspace member that carries a `Dockerfile`, it exports `pylock.toml`
 group-export-dirs = { "neural-networks-*" = "docker/neural-networks-base" }
 ```
 
+## preflight runner
+
+Consumer preflights thin into a declarative check list over `run_checks`:
+
+```python
+from python_devkit.preflight_runner import CommandCheck, GeneratedCheck, run_checks
+
+run_checks([
+    CommandCheck(label="Lint", command="uv run ruff check ."),
+    GeneratedCheck(
+        label="Check client codegen",
+        generate_command="uv run generate-clients",
+        paths=[Path("packages/generated/")],
+        fix_command="uv run generate-clients",
+    ),
+])
+```
+
+`CommandCheck` wraps a shell command in a labeled CI step group; `GeneratedCheck` additionally guards the checked-in generator output with a git-status staleness check (diff shown, fix command named). Checks run fail-fast with per-step durations in the Actions step summary.
+
 ## Development
 
 Requires Python 3.13+ and [uv](https://docs.astral.sh/uv/).
