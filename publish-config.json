@@ -1,0 +1,11 @@
+{
+  "packages": [
+    {
+      "name": "python-devkit",
+      "path": ".",
+      "feeds": { "pypi": "python-devkit" }
+    }
+  ],
+  "ci_workflow": "ci.yml",
+  "mirror_prefix": "ghcr.io/outernet-foundation/mirror"
+}
