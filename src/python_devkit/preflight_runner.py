@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from pathlib import Path
 
-from bashrun import bash, bash_output
+from bashrun.bash import bash, bash_output
 from ci_devkit.ci_step import ci_step
 from pydantic import BaseModel
 

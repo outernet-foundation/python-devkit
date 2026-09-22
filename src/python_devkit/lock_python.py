@@ -6,7 +6,7 @@ from tomllib import load
 from typing import Annotated, Any
 
 import typer
-from bashrun import bash, bash_check, bash_output
+from bashrun.bash import bash, bash_check, bash_output
 from pydantic import BaseModel, ConfigDict, Field
 
 app = typer.Typer(add_completion=False, pretty_exceptions_show_locals=False)
