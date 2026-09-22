@@ -1,6 +1,6 @@
 # python-devkit
 
-Python repo-lifecycle tooling shared across outernet-foundation repos: workspace locking (`lock-python`), the preflight check runner, and the canonical ruff configuration with its sync verb and drift gate. Sibling of `ci-devkit` (the CI runner floor it will depend on), `unity-devkit`, `docker-devkit`, and `release-devkit`.
+Python repo-lifecycle tooling shared across outernet-foundation repos: workspace locking (`lock-python`), the preflight verb (the fixed Python battery), and the canonical ruff configuration with its sync verb and drift gate. Sibling of `ci-devkit` (the CI runner floor it depends on), `unity-devkit`, `docker-devkit`, and `release-devkit`.
 
 ## lock-python
 
@@ -18,25 +18,24 @@ For every workspace member that carries a `Dockerfile`, it exports `pylock.toml`
 group-export-dirs = { "neural-networks-*" = "docker/neural-networks-base" }
 ```
 
-## preflight runner
+## preflight
 
-Consumer preflights thin into a declarative check list over `run_checks`:
+The fixed battery of checks every healthy org Python repo passes — the same command in CI and locally, fail-fast with per-step durations in the Actions step summary:
 
-```python
-from python_devkit.preflight_runner import CommandCheck, GeneratedCheck, run_checks
-
-run_checks([
-    CommandCheck(label="Lint", command="uv run ruff check ."),
-    GeneratedCheck(
-        label="Check client codegen",
-        generate_command="uv run generate-clients",
-        paths=[Path("packages/generated/")],
-        fix_command="uv run generate-clients",
-    ),
-])
+```bash
+uvx --from python-devkit preflight-python   # sync → lint → format → types → deptry → lock staleness → ruff drift → tests
 ```
 
-`CommandCheck` wraps a shell command in a labeled CI step group; `GeneratedCheck` additionally guards the checked-in generator output with a git-status staleness check (diff shown, fix command named). Checks run fail-fast with per-step durations in the Actions step summary.
+The battery is fixed by design: sync, ruff check, ruff format --check, basedpyright, deptry (pinned internally, so adoption adds no dependency), lock staleness (`lock-python --check` semantics; plain `uv lock --check` for non-workspace repos), ruff config drift, and pytest. For workspaces, deptry runs per `[tool.uv.workspace]` member that has a `pyproject.toml`, inside the member directory. Configuration is toggles only, in the root `pyproject.toml`:
+
+```toml
+[tool.python-devkit.preflight]
+tests = false                    # skip pytest (default true)
+sync-args = ["--all-packages"]   # extra flags for the sync step
+deptry-exclude = ["packages/generated/*"]  # member-path globs skipped by the deptry step
+```
+
+Repo-specific checks (codegen staleness, environment setup) compose locally around the battery — `from python_devkit.preflight import preflight` and call it in-process — never inside python-devkit.
 
 ## ruff canonical config
 
@@ -51,7 +50,7 @@ The consuming `ruff.toml` must set `extend = "ruff.base.toml"` and may only add 
 
 ## reusable check workflow
 
-`.github/workflows/check.yml` is the org's reusable Python CI check (`workflow_call`): checkout, cached uv setup, `ruff check` + `ruff format --check`, `basedpyright`, `pytest` behind a `test` input (default true), and the ruff drift gate. Tool repos collapse their check jobs onto it, pinned to a pushed SHA:
+`.github/workflows/check.yml` is the org's reusable Python CI check (`workflow_call`): checkout, cached uv setup, and one invocation of the preflight battery (`uvx --from python-devkit==<pin> preflight`). Tool repos collapse their check jobs onto it, pinned to a pushed SHA:
 
 ```yaml
 jobs:
@@ -59,7 +58,7 @@ jobs:
     uses: outernet-foundation/python-devkit/.github/workflows/check.yml@<pushed-sha>
 ```
 
-Pass `test: false` when the repo has no pytest suite. The drift gate's `python-devkit` version pin lives inside the workflow — bumping it is one edit here plus a SHA bump at consumers, never a per-repo edit wave.
+The battery's `python-devkit` version pin lives inside the workflow — bumping it is one edit here plus a SHA bump at consumers, never a per-repo edit wave. Repo-specific toggles (`tests`, `sync-args`, `deptry-exclude`) live in each repo's `[tool.python-devkit.preflight]` table, not in workflow inputs.
 
 ## Development
 
@@ -67,7 +66,5 @@ Requires Python 3.13+ and [uv](https://docs.astral.sh/uv/).
 
 ```bash
 uv sync
-uv run ruff check .
-uv run ruff format --check .
-uv run basedpyright
+uv run preflight-python
 ```
