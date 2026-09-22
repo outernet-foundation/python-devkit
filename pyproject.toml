@@ -12,10 +12,11 @@ dependencies = [
 
 [project.scripts]
 lock-python = "python_devkit.lock_python:app"
+preflight-python = "python_devkit.preflight:app"
 sync-ruff = "python_devkit.sync_ruff:app"
 
 [dependency-groups]
-dev = ["basedpyright>=1.39.10", "ruff>=0.14.11"]
+dev = ["basedpyright>=1.39.10", "pytest>=8.0.0", "ruff>=0.14.11"]
 
 [build-system]
 requires = ["hatchling"]
