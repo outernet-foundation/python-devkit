@@ -2,11 +2,6 @@ name: Check
 
 on:
   workflow_call:
-    inputs:
-      test:
-        description: Run the pytest step
-        type: boolean
-        default: true
 
 jobs:
   check:
@@ -20,18 +15,5 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Lint
-        run: uv run ruff check .
-
-      - name: Format
-        run: uv run ruff format --check .
-
-      - name: Type check
-        run: uv run basedpyright
-
-      - name: Test
-        if: ${{ inputs.test }}
-        run: uv run pytest
-
-      - name: Ruff config drift
-        run: uvx --from python-devkit==0.1.3 sync-ruff --check
+      - name: Preflight
+        run: uvx --from python-devkit==0.1.5 preflight-python
