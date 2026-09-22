@@ -1,6 +1,6 @@
 # python-devkit
 
-The python repo-lifecycle devkit — workspace locking (`lock-python`), the preflight check runner, and the canonical ruff configuration with its sync verb and drift gate, per the tooling-consolidation program. Purely python-domain by charter: the CI runner floor (step wrapper, runner provisioning, git tags, OCI cache) lives in [`ci-devkit`](https://github.com/outernet-foundation/ci-devkit), which this package depends on (`ci-devkit>=0.1.0`).
+The python repo-lifecycle devkit — workspace locking (`lock-python`), the preflight check runner, the canonical ruff configuration with its sync verb and drift gate, and the org's reusable Python check workflow, per the tooling-consolidation program. Purely python-domain by charter: the CI runner floor (step wrapper, runner provisioning, git tags, OCI cache) lives in [`ci-devkit`](https://github.com/outernet-foundation/ci-devkit), which this package depends on (`ci-devkit>=0.1.0`).
 
 The package is `python_devkit` (src-layout under `src/python_devkit/`); all dependencies resolve from PyPI (`bashrun`, `ci-devkit`, `pydantic`, `typer`; git-source pins only in scratch branches testing unreleased changes).
 
@@ -13,6 +13,8 @@ Entry point (`[project.scripts]`): `lock-python` → `lock_python.py:app`. The c
 `preflight_runner.py` is the labeled-check runner consumer preflights thin into: `run_checks(checks)` executes a declarative list of `CommandCheck` (label + shell command under a `ci_step` group) and `GeneratedCheck` (label + generate command + pathspec + fix command — runs the generator, then fails on any `git status --porcelain` dirt under the paths, showing the diff and the fix command). Fail-fast; each check's duration lands in the Actions step summary via `ci_step`.
 
 `sync_ruff.py` writes the org-canonical ruff config (`src/python_devkit/ruff.base.toml`, shipped as package data) into a consuming repo's root as `ruff.base.toml`; `--check` is the drift gate (byte compare against the packaged canonical). The verb also validates the consuming repo's `ruff.toml` layer: it must set `extend = "ruff.base.toml"` and use only extend keys — plain `exclude`/`lint.select`/`lint.ignore`/`lint.per-file-ignores` in the layer replace the canonical settings under `extend` and fail the check. This repo consumes its own canonical the same way: root `ruff.base.toml` is a verb-written copy of the packaged one, root `ruff.toml` is the (currently empty) local layer.
+
+`.github/workflows/check.yml` is the org's reusable Python check workflow (`workflow_call`): checkout, cached `setup-uv`, ruff check + format, basedpyright, pytest behind a `test` input (default true), and the ruff drift gate. The drift gate's `python-devkit==0.1.3` uvx pin is internal to this one file — bumping it is a single workflow edit that reaches consumers as a workflow-SHA bump, not a per-repo edit wave. This repo's own `ci.yml` calls it via local path with `test: false` (no test suite yet); every other tool repo pins it cross-repo by pushed SHA. The workflow must stay self-contained: inline `astral-sh/setup-uv@v7`, no relative composite-action references (those resolve against the caller's checkout), no repo-specific values.
 
 ## Constraints
 

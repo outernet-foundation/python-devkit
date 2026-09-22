@@ -49,6 +49,18 @@ uvx --from python-devkit sync-ruff --check   # drift gate: exit 1 on divergence
 
 The consuming `ruff.toml` must set `extend = "ruff.base.toml"` and may only add via extend keys (`extend-exclude`, `lint.extend-ignore`, `lint.extend-per-file-ignores`) — plain `exclude`, `lint.select`, `lint.ignore`, and `lint.per-file-ignores` replace the canonical settings under `extend`, and `--check` fails on them. To change the canonical: edit it here, release, and run `sync-ruff` in every consuming repo.
 
+## reusable check workflow
+
+`.github/workflows/check.yml` is the org's reusable Python CI check (`workflow_call`): checkout, cached uv setup, `ruff check` + `ruff format --check`, `basedpyright`, `pytest` behind a `test` input (default true), and the ruff drift gate. Tool repos collapse their check jobs onto it, pinned to a pushed SHA:
+
+```yaml
+jobs:
+  check:
+    uses: outernet-foundation/python-devkit/.github/workflows/check.yml@<pushed-sha>
+```
+
+Pass `test: false` when the repo has no pytest suite. The drift gate's `python-devkit` version pin lives inside the workflow — bumping it is one edit here plus a SHA bump at consumers, never a per-repo edit wave.
+
 ## Development
 
 Requires Python 3.13+ and [uv](https://docs.astral.sh/uv/).
