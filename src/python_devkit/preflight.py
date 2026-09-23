@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from fnmatch import fnmatch
 from pathlib import Path
 from tomllib import load
@@ -55,7 +54,17 @@ def preflight(
         bash("uv run basedpyright", cwd=root)
 
     with ci_step("Dependency check"):
-        for target in deptry_targets(members, root, config.deptry_exclude):
+        if not members:
+            targets = ["."]
+        else:
+            targets: list[str] = []
+            for member in members:
+                if any(fnmatch(member, pattern) for pattern in config.deptry_exclude):
+                    continue
+                if not (root / member / "pyproject.toml").exists():
+                    continue
+                targets.append(member)
+        for target in targets:
             bash(f"uv run --no-sync --with deptry=={DEPTRY_VERSION} deptry .", cwd=root / target)
 
     with ci_step("Check lock files"):
@@ -67,17 +76,3 @@ def preflight(
     if config.tests:
         with ci_step("Test"):
             bash("uv run pytest", cwd=root)
-
-
-def deptry_targets(members: Sequence[str], root: Path, exclude: Sequence[str]) -> list[str]:
-    if not members:
-        return ["."]
-
-    targets: list[str] = []
-    for member in members:
-        if any(fnmatch(member, pattern) for pattern in exclude):
-            continue
-        if not (root / member / "pyproject.toml").exists():
-            continue
-        targets.append(member)
-    return targets
