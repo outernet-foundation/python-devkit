@@ -7,6 +7,8 @@ from typing import Annotated
 import typer
 from pydantic import BaseModel, ConfigDict, Field
 
+from .text import normalize_line_endings
+
 app = typer.Typer(add_completion=False, pretty_exceptions_show_locals=False)
 
 CANONICAL_PATH = Path(__file__).parent / "ruff.base.toml"
@@ -42,7 +44,7 @@ def sync_ruff(
     if check:
         print("Checking ruff.base.toml...")
         committed = base_path.read_text(encoding="utf-8") if base_path.exists() else ""
-        if _normalize_line_endings(committed) != _normalize_line_endings(canonical):
+        if normalize_line_endings(committed) != normalize_line_endings(canonical):
             print("  STALE: ruff.base.toml diverges from python-devkit's canonical config.")
             print("  Run 'uvx --from python-devkit sync-ruff' to update.")
             raise SystemExit(1)
@@ -52,10 +54,6 @@ def sync_ruff(
             file.write(canonical)
         print(f"Wrote {base_path}")
 
-    _check_layer(root)
-
-
-def _check_layer(root: Path) -> None:
     layer_path = root / "ruff.toml"
     if not layer_path.exists():
         print(f"BROKEN: {layer_path} is missing; the synced base needs an extending ruff.toml beside it.")
@@ -84,7 +82,3 @@ def _check_layer(root: Path) -> None:
         for offender in offenders:
             print(f"  {offender}")
         raise SystemExit(1)
-
-
-def _normalize_line_endings(text: str) -> str:
-    return text.replace("\r\n", "\n").replace("\r", "\n")

@@ -9,6 +9,8 @@ import typer
 from bashrun.bash import bash, bash_check, bash_output
 from pydantic import BaseModel, ConfigDict, Field
 
+from .text import normalize_line_endings
+
 app = typer.Typer(add_completion=False, pretty_exceptions_show_locals=False)
 
 
@@ -74,7 +76,14 @@ def lock_python(
         for group in package.dependency_groups:
             if group == "dev":
                 continue
-            redirect = _redirect_dir(group, config, root)
+            redirect = next(
+                (
+                    root / directory
+                    for pattern, directory in config.group_export_dirs.items()
+                    if fnmatch(group, pattern)
+                ),
+                None,
+            )
             if redirect is None:
                 stale |= _export_pylock(check, root, member_dir, package.project.name, group=group)
                 continue
@@ -104,8 +113,8 @@ def _export_pylock(check: bool, root: Path, export_dir: Path, package_name: str,
 
     if check:
         print(f"Checking {pylock}...")
-        exported = _normalize_line_endings(bash_output(export_command, cwd=root))
-        committed = _normalize_line_endings(pylock.read_text(encoding="utf-8")) if pylock.exists() else ""
+        exported = normalize_line_endings(bash_output(export_command, cwd=root))
+        committed = normalize_line_endings(pylock.read_text(encoding="utf-8")) if pylock.exists() else ""
         if exported != committed:
             print(f"  STALE: {pylock} is out of date.")
             return True
@@ -117,14 +126,3 @@ def _export_pylock(check: bool, root: Path, export_dir: Path, package_name: str,
     with pylock.open("w", encoding="utf-8", newline="\n") as file:
         file.write(text)
     return False
-
-
-def _normalize_line_endings(text: str) -> str:
-    return text.replace("\r\n", "\n").replace("\r", "\n")
-
-
-def _redirect_dir(group: str, config: LockPythonConfig, root: Path) -> Path | None:
-    for pattern, directory in config.group_export_dirs.items():
-        if fnmatch(group, pattern):
-            return root / directory
-    return None
