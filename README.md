@@ -48,17 +48,26 @@ uvx --from python-devkit sync-ruff --check   # drift gate: exit 1 on divergence
 
 The consuming `ruff.toml` must set `extend = "ruff.base.toml"` and may only add via extend keys (`extend-exclude`, `lint.extend-ignore`, `lint.extend-per-file-ignores`) — plain `exclude`, `lint.select`, `lint.ignore`, and `lint.per-file-ignores` replace the canonical settings under `extend`, and `--check` fails on them. To change the canonical: edit it here, release, and run `sync-ruff` in every consuming repo.
 
-## reusable check workflow
+## CI check job
 
-`.github/workflows/check.yml` is the org's reusable Python CI check (`workflow_call`): checkout, cached uv setup, and one invocation of the preflight battery (`uvx --from python-devkit==<pin> preflight`). Tool repos collapse their check jobs onto it, pinned to a pushed SHA:
+Consumers inline the check job directly in their `ci.yml`: checkout, cached uv setup, and one invocation of the preflight battery. The `python-devkit` version pin lives in each consumer's workflow file. Repo-specific toggles (`tests`, `sync-args`, `deptry-exclude`) live in each repo's `[tool.python-devkit.preflight]` table, not in workflow inputs.
 
 ```yaml
 jobs:
   check:
-    uses: outernet-foundation/python-devkit/.github/workflows/check.yml@<pushed-sha>
-```
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
 
-The battery's `python-devkit` version pin lives inside the workflow — bumping it is one edit here plus a SHA bump at consumers, never a per-repo edit wave. Repo-specific toggles (`tests`, `sync-args`, `deptry-exclude`) live in each repo's `[tool.python-devkit.preflight]` table, not in workflow inputs.
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Preflight
+        run: uvx --from python-devkit==<pin> preflight-python
+```
 
 ## Development
 
