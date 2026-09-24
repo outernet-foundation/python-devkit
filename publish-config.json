@@ -3,6 +3,7 @@
     {
       "name": "python-devkit",
       "path": ".",
+      "major_minor": "0.1",
       "feeds": { "pypi": "python-devkit" }
     }
   ],
