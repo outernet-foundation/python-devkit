@@ -27,7 +27,7 @@ Consumer CI inlines the check job directly in each repo's `ci.yml` (this repo's 
 
 ## Release flow
 
-`release.yml` (workflow_run-gated on CI) publishes via release-devkit uvx-isolated under OIDC trusted publishing (publisher bound to `release.yml`, no environment); the first release is 0.1.0 on the fresh `python-devkit-v*` tag ledger. The committed `pyproject.toml` version is permanently the `0.0.0.dev0` sentinel; the tags are the version ledger. API-breaking changes ship with a manually bumped version — patch-auto assumes additive changes.
+`release.yml` (workflow_run-gated on CI) publishes via release-devkit uvx-isolated under OIDC trusted publishing (publisher bound to `release.yml`, no environment); versions ride the declared `major_minor` line on the `python-devkit-v*` tag ledger. The committed `pyproject.toml` version is permanently the `0.0.0.dev0` sentinel; the tags are the version ledger. API-breaking changes ship with a manually bumped `major_minor` — patch-auto assumes additive changes.
 
 ## See also
 
