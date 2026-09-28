@@ -2,7 +2,7 @@
 
 The python repo-lifecycle devkit — workspace locking (`lock-python`), the preflight verb (the fixed Python battery), and the canonical ruff configuration with its sync verb and drift gate, per the tooling-consolidation program. Purely python-domain by charter: the CI runner floor (step wrapper, runner provisioning, OCI cache) lives in [`ci-devkit`](https://github.com/outernet-foundation/ci-devkit), which this package depends on (`ci-devkit>=0.1.0`); the version-ledger primitives live in release-devkit's `ledger.py`.
 
-Config surfaces org-wide follow one law (its home is release-devkit's `AGENTS.md`): config names its owning devkit and lives beside the unit it describes — project-dep devkits configure via `[tool.<devkit>.*]` pyproject tables, uvx-isolated devkits via one root `<devkit>.json` per repo. This repo's `[tool.python-devkit.*]` tables in consumers are an instance; this repo itself is published by root `release-devkit.json`.
+Config surfaces org-wide follow one law (its home is release-devkit's `AGENTS.md`): config names its owning devkit and lives beside the unit it describes — project-dep devkits configure via `[tool.<devkit>.*]` pyproject tables, uvx-isolated devkits via one root `<devkit>.json` per repo. This repo's `[tool.python-devkit.*]` tables in consumers are an instance; this repo itself is published by root `release-devkit.yaml`.
 
 The package is `python_devkit` (src-layout under `src/python_devkit/`); all dependencies resolve from PyPI (`bashrun`, `ci-devkit`, `pydantic`, `typer`; git-source pins only in scratch branches testing unreleased changes).
 
