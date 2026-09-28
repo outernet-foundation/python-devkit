@@ -23,4 +23,4 @@ jobs:
           enable-cache: true
 
       - name: Preflight
-        run: uvx --from python-devkit==0.1.5 preflight-python
+        run: uv run preflight-python
