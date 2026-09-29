@@ -35,7 +35,7 @@ class BashRecorder:
     def __init__(self) -> None:
         self.commands: list[tuple[str, Path | None]] = []
 
-    def __call__(self, command: str, *, cwd: Path | None = None) -> None:
+    def __call__(self, command: str, *, cwd: Path | None = None, env: dict[str, str] | None = None) -> None:
         self.commands.append((command, cwd))
 
 

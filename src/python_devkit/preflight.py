@@ -17,6 +17,10 @@ app = typer.Typer(add_completion=False, pretty_exceptions_show_locals=False)
 
 DEPTRY_VERSION = "0.24.0"
 
+# Clear VIRTUAL_ENV so a child uv run discovers the consumer project env instead of
+# warning that python-devkit's env (inherited under uvx/--project) doesn't match.
+_CLEAR_VIRTUAL_ENV = {"VIRTUAL_ENV": ""}
+
 
 class PreflightConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -42,16 +46,16 @@ def preflight(
     members = WorkspaceConfig.model_validate(tool.get("uv", {}).get("workspace", {})).members
 
     with ci_step("Sync"):
-        bash(f"uv sync {' '.join(config.sync_args)}".rstrip(), cwd=root)
+        bash(f"uv sync {' '.join(config.sync_args)}".rstrip(), cwd=root, env=_CLEAR_VIRTUAL_ENV)
 
     with ci_step("Lint"):
-        bash("uv run ruff check .", cwd=root)
+        bash("uv run ruff check .", cwd=root, env=_CLEAR_VIRTUAL_ENV)
 
     with ci_step("Format"):
-        bash("uv run ruff format --check .", cwd=root)
+        bash("uv run ruff format --check .", cwd=root, env=_CLEAR_VIRTUAL_ENV)
 
     with ci_step("Type check"):
-        bash("uv run basedpyright", cwd=root)
+        bash("uv run basedpyright", cwd=root, env=_CLEAR_VIRTUAL_ENV)
 
     with ci_step("Dependency check"):
         if not members:
@@ -65,7 +69,9 @@ def preflight(
                     continue
                 targets.append(member)
         for target in targets:
-            bash(f"uv run --no-sync --with deptry=={DEPTRY_VERSION} deptry .", cwd=root / target)
+            bash(
+                f"uv run --no-sync --with deptry=={DEPTRY_VERSION} deptry .", cwd=root / target, env=_CLEAR_VIRTUAL_ENV
+            )
 
     with ci_step("Check lock files"):
         lock_python(check=True, root=root)
@@ -75,4 +81,4 @@ def preflight(
 
     if config.tests:
         with ci_step("Test"):
-            bash("uv run pytest", cwd=root)
+            bash("uv run pytest", cwd=root, env=_CLEAR_VIRTUAL_ENV)
