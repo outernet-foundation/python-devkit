@@ -29,7 +29,7 @@ Consumers run `preflight-python` via the python-devkit PyPI dependency (`uv run 
 
 ## Release flow
 
-`ci-cd.yml` publishes via release-devkit's publish composites (run-from-source, SHA-pinned — see release-devkit's `AGENTS.md`) under OIDC trusted publishing (publisher bound to `ci-cd.yml`, `release` environment); versions ride the declared `major_minor` line on the `python-devkit-v*` tag ledger. The committed `pyproject.toml` version is permanently the `0.0.0.dev0` sentinel; the tags are the version ledger. While pre-1.0, breaking changes ride the current `0.1` patch line; a `major_minor` bump is reserved for the eventual 1.0.0 stabilization release.
+`ci-cd.yml` publishes via inlined `uvx --from release-devkit==${{ env.RELEASE_DEVKIT_VERSION }}` steps, version-pinned in the workflow `env:` (see release-devkit's `AGENTS.md`), under OIDC trusted publishing (publisher bound to `ci-cd.yml`, `release` environment); versions ride the declared `major_minor` line on the `python-devkit-v*` tag ledger. The committed `pyproject.toml` version is permanently the `0.0.0.dev0` sentinel; the tags are the version ledger. While pre-1.0, breaking changes ride the current `0.1` patch line; a `major_minor` bump is reserved for the eventual 1.0.0 stabilization release.
 
 ## See also
 
