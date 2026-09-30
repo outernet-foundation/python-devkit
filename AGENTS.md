@@ -16,7 +16,7 @@ Entry points (`[project.scripts]`): `lock-python` → `lock_python.py:app`, `pre
 
 `sync_ruff.py` writes the org-canonical ruff config (`src/python_devkit/ruff.base.toml`, shipped as package data) into a consuming repo's root as `ruff.base.toml`; `--check` is the drift gate (byte compare against the packaged canonical). The verb also validates the consuming repo's `ruff.toml` layer: it must set `extend = "ruff.base.toml"` and use only extend keys — plain `exclude`/`lint.select`/`lint.ignore`/`lint.per-file-ignores` in the layer replace the canonical settings under `extend` and fail the check. This repo consumes its own canonical the same way: root `ruff.base.toml` is a verb-written copy of the packaged one, root `ruff.toml` is the (currently empty) local layer.
 
-Consumer CI inlines the check job directly in each repo's `ci.yml` (this repo's own `ci.yml` included): checkout, cached `setup-uv`, and one `uvx --from python-devkit==<pin> preflight-python` invocation of the battery. The version pin lives in each consumer's workflow file — bumping it is a per-repo edit. Repo-specific toggles live in each repo's `[tool.python-devkit.preflight]` table, never in workflow inputs.
+Consumers run `preflight-python` via the python-devkit PyPI dependency (`uv run preflight-python`, version-sourced by the consumer's `uv.lock`) — except bashrun and ci-devkit, which python-devkit runtime-depends on and therefore cannot take it as a dependency (uv rejects the name-shadowing as a self-dependency); those two consume it through a sidecar virtual project (`uv run --project tools/devkit preflight-python`) whose different root name breaks the shadowing (see bashrun's and ci-devkit's `AGENTS.md`). This repo is the self-preflight exception: its own `ci-cd.yml` runs `uv run preflight-python` inline (it *is* python-devkit, testing local code). Repo-specific toggles live in each repo's `[tool.python-devkit.preflight]` table, never in workflow inputs.
 
 ## Constraints
 
@@ -29,7 +29,7 @@ Consumer CI inlines the check job directly in each repo's `ci.yml` (this repo's 
 
 ## Release flow
 
-`release.yml` (workflow_run-gated on CI) publishes via release-devkit uvx-isolated under OIDC trusted publishing (publisher bound to `release.yml`, no environment); versions ride the declared `major_minor` line on the `python-devkit-v*` tag ledger. The committed `pyproject.toml` version is permanently the `0.0.0.dev0` sentinel; the tags are the version ledger. While pre-1.0, breaking changes ride the current `0.1` patch line; a `major_minor` bump is reserved for the eventual 1.0.0 stabilization release.
+`ci-cd.yml` publishes via inlined `uvx --from release-devkit==${{ env.RELEASE_DEVKIT_VERSION }}` steps, version-pinned in the workflow `env:` (see release-devkit's `AGENTS.md`), under OIDC trusted publishing (publisher bound to `ci-cd.yml`, `release` environment); versions ride the declared `major_minor` line on the `python-devkit-v*` tag ledger. The committed `pyproject.toml` version is permanently the `0.0.0.dev0` sentinel; the tags are the version ledger. While pre-1.0, breaking changes ride the current `0.1` patch line; a `major_minor` bump is reserved for the eventual 1.0.0 stabilization release.
 
 ## See also
 

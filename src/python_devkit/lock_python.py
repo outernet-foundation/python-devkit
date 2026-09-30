@@ -13,6 +13,10 @@ from .text import normalize_line_endings
 
 app = typer.Typer(add_completion=False, pretty_exceptions_show_locals=False)
 
+# Clear VIRTUAL_ENV so a child uv run discovers the consumer project env instead of
+# warning that python-devkit's env (inherited under uvx/--project) doesn't match.
+_CLEAR_VIRTUAL_ENV = {"VIRTUAL_ENV": ""}
+
 
 class LockPythonConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -45,13 +49,13 @@ def lock_python(
 
     if check:
         print("Checking uv.lock...")
-        if not bash_check("uv lock --check", cwd=root):
+        if not bash_check("uv lock --check", cwd=root, env=_CLEAR_VIRTUAL_ENV):
             print("  STALE: uv.lock is out of date. Run 'uv run lock-python' to update.")
             stale = True
         else:
             print("  OK")
     else:
-        bash("uv lock", cwd=root)
+        bash("uv lock", cwd=root, env=_CLEAR_VIRTUAL_ENV)
 
     with (root / "pyproject.toml").open("rb") as file:
         workspace_toml = load(file)
@@ -113,7 +117,7 @@ def _export_pylock(check: bool, root: Path, export_dir: Path, package_name: str,
 
     if check:
         print(f"Checking {pylock}...")
-        exported = normalize_line_endings(bash_output(export_command, cwd=root))
+        exported = normalize_line_endings(bash_output(export_command, cwd=root, env=_CLEAR_VIRTUAL_ENV))
         committed = normalize_line_endings(pylock.read_text(encoding="utf-8")) if pylock.exists() else ""
         if exported != committed:
             print(f"  STALE: {pylock} is out of date.")
@@ -121,7 +125,7 @@ def _export_pylock(check: bool, root: Path, export_dir: Path, package_name: str,
         print("  OK")
         return False
 
-    bash(export_command + f"--output-file {pylock} ", cwd=root)
+    bash(export_command + f"--output-file {pylock} ", cwd=root, env=_CLEAR_VIRTUAL_ENV)
     text = pylock.read_text(encoding="utf-8")
     with pylock.open("w", encoding="utf-8", newline="\n") as file:
         file.write(text)

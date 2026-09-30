@@ -34,25 +34,25 @@ wheels = [
 
 [[package]]
 name = "bashrun"
-version = "0.1.1"
+version = "0.1.12"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/4e/aa/1fa33b9a46ecd507e633db5f3429b09c9e7c7af701fbc8b6c08ec671970f/bashrun-0.1.1.tar.gz", hash = "sha256:349ceb633e35cb3c8b7a096915afbef9b2fe4ff32caa933715ce57bdf6dcc1af", size = 18957, upload-time = "2026-09-21T03:25:19.324Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/19/2c/742acb113293e712d82c5cfce35a30f344385a7d9852d5844b0bcff4f12f/bashrun-0.1.12.tar.gz", hash = "sha256:d5fd926ec1cb1df6e218a98fe8ad737c24b72bcf740bdfbe2ecf4c77894878a0", size = 32364, upload-time = "2026-09-30T04:02:19.854Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/49/c3fcc160138d371d9180984c316e94f5decd202f94f558d77468aa3fe63a/bashrun-0.1.1-py3-none-any.whl", hash = "sha256:3ea84f2a67ce15c9b16bc503af0c7b16e307f13116cc7c95b559118cd89dea90", size = 7636, upload-time = "2026-09-21T03:25:18.531Z" },
+    { url = "https://files.pythonhosted.org/packages/f6/1d/4de203dbe4d711b39f7b440bd141b429864e2a3539faa9b6531eab456195/bashrun-0.1.12-py3-none-any.whl", hash = "sha256:9a188b90eb25249d24556dcdaccfa09ca3efe741406a1c71c7e3cecd170f41b0", size = 7511, upload-time = "2026-09-30T04:02:18.991Z" },
 ]
 
 [[package]]
 name = "ci-devkit"
-version = "0.1.11"
+version = "0.1.14"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bashrun" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a9/44/baebaf67bd2972a727b31a2e596ad8af0ece7ca7c1a3f3623e2f31350212/ci_devkit-0.1.11.tar.gz", hash = "sha256:80f4922ae5d92ce2bcd37a042519a255ff2ecd2d322714f68dd8de00c5e66a99", size = 40557, upload-time = "2026-09-25T22:31:04.53Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/22/25/dc42c65e6147eb64477eae4f410b26d630f03f46c3d3bdcdab374df28081/ci_devkit-0.1.14.tar.gz", hash = "sha256:f8b45fa995bba626edda29c191883224173155a39137da5a1bc67f09ad28d337", size = 51204, upload-time = "2026-09-30T04:06:27.581Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0e/05/d993b449a680a6330663e0e8d5b4229377baf23190735ae3638a3845ae3c/ci_devkit-0.1.11-py3-none-any.whl", hash = "sha256:972548f2cf6decbb12f766b70a6aa1e0e7f6c77f8753bf4c6ef851f374ff5468", size = 25687, upload-time = "2026-09-25T22:31:03.58Z" },
+    { url = "https://files.pythonhosted.org/packages/4f/08/56cafd065e2d00ad90d450867282d79469bc4c7c9eefa1dc11dcf84e0c96/ci_devkit-0.1.14-py3-none-any.whl", hash = "sha256:64b74d797a040d8d57735eda30dbb59844d0de9c64e53dd24e9769d10bc34e18", size = 25689, upload-time = "2026-09-30T04:06:26.522Z" },
 ]
 
 [[package]]
