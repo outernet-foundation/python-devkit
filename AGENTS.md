@@ -29,7 +29,7 @@ Consumers run `preflight-python` via the python-devkit PyPI dependency (`uv run 
 
 ## Release flow
 
-release-devkit's `AGENTS.md` owns the three-workflow contract; this repo follows it unchanged. Repo-specific facts: this repo is the self-preflight exception — its own `integrate.yml` runs `uv run preflight-python` inline (it *is* python-devkit, testing local code) — and while pre-1.0, breaking changes ride the current `0.1` patch line (a `major_minor` bump is reserved for the eventual 1.0.0 stabilization). bashrun and ci-devkit consume this package through their `tools/devkit` sidecars (name-shadowing; see their `AGENTS.md`); every other consumer declares it as a plain dependency.
+release-devkit's `AGENTS.md` owns the three-workflow contract; this repo follows it unchanged. Repo-specific facts: this repo is the self-preflight exception — its own `integrate.yml` runs `uv run preflight-python` inline (it *is* python-devkit, testing local code) — and API-breaking changes ship with a manually bumped `major_minor` (patch-auto assumes additive changes). bashrun and ci-devkit consume this package through their `tools/devkit` sidecars (name-shadowing; see their `AGENTS.md`); every other consumer declares it as a plain dependency.
 
 ## See also
 
