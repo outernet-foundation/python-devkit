@@ -54,7 +54,7 @@ def run_preflight(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, pyproject: st
 
 
 def deptry_commands(recorder: BashRecorder) -> list[Path | None]:
-    return [cwd for command, cwd in recorder.commands if command.endswith("deptry .")]
+    return [cwd for command, cwd in recorder.commands if command.endswith("deptry src")]
 
 
 def test_deptry_runs_at_repo_root_for_plain_repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

@@ -70,7 +70,9 @@ def preflight(
                 targets.append(member)
         for target in targets:
             bash(
-                f"uv run --no-sync --with deptry=={DEPTRY_VERSION} deptry .", cwd=root / target, env=_CLEAR_VIRTUAL_ENV
+                f"uv run --no-sync --with deptry=={DEPTRY_VERSION} deptry src",
+                cwd=root / target,
+                env=_CLEAR_VIRTUAL_ENV,
             )
 
     with ci_step("Check lock files"):
