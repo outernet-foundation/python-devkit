@@ -7,7 +7,6 @@ from typing import Annotated
 
 import typer
 from bashrun.bash import bash
-from ci_devkit.ci_step import ci_step
 from pydantic import BaseModel, ConfigDict, Field
 
 from .lock_python import lock_python
@@ -45,42 +44,26 @@ def preflight(
     config = PreflightConfig.model_validate(tool.get("python-devkit", {}).get("preflight", {}))
     members = WorkspaceConfig.model_validate(tool.get("uv", {}).get("workspace", {})).members
 
-    with ci_step("Sync"):
-        bash(f"uv sync {' '.join(config.sync_args)}".rstrip(), cwd=root, env=_CLEAR_VIRTUAL_ENV)
+    bash(f"uv sync {' '.join(config.sync_args)}".rstrip(), cwd=root, env=_CLEAR_VIRTUAL_ENV)
+    bash("uv run ruff check .", cwd=root, env=_CLEAR_VIRTUAL_ENV)
+    bash("uv run ruff format --check .", cwd=root, env=_CLEAR_VIRTUAL_ENV)
+    bash("uv run basedpyright", cwd=root, env=_CLEAR_VIRTUAL_ENV)
 
-    with ci_step("Lint"):
-        bash("uv run ruff check .", cwd=root, env=_CLEAR_VIRTUAL_ENV)
+    if not members:
+        targets = ["."]
+    else:
+        targets: list[str] = []
+        for member in members:
+            if any(fnmatch(member, pattern) for pattern in config.deptry_exclude):
+                continue
+            if not (root / member / "pyproject.toml").exists():
+                continue
+            targets.append(member)
 
-    with ci_step("Format"):
-        bash("uv run ruff format --check .", cwd=root, env=_CLEAR_VIRTUAL_ENV)
+    for target in targets:
+        bash(f"uv run --no-sync --with deptry=={DEPTRY_VERSION} deptry src", cwd=root / target, env=_CLEAR_VIRTUAL_ENV)
 
-    with ci_step("Type check"):
-        bash("uv run basedpyright", cwd=root, env=_CLEAR_VIRTUAL_ENV)
-
-    with ci_step("Dependency check"):
-        if not members:
-            targets = ["."]
-        else:
-            targets: list[str] = []
-            for member in members:
-                if any(fnmatch(member, pattern) for pattern in config.deptry_exclude):
-                    continue
-                if not (root / member / "pyproject.toml").exists():
-                    continue
-                targets.append(member)
-        for target in targets:
-            bash(
-                f"uv run --no-sync --with deptry=={DEPTRY_VERSION} deptry src",
-                cwd=root / target,
-                env=_CLEAR_VIRTUAL_ENV,
-            )
-
-    with ci_step("Check lock files"):
-        lock_python(check=True, root=root)
-
-    with ci_step("Check ruff config"):
-        sync_ruff(check=True, root=root)
-
+    lock_python(check=True, root=root)
+    sync_ruff(check=True, root=root)
     if config.tests:
-        with ci_step("Test"):
-            bash("uv run pytest", cwd=root, env=_CLEAR_VIRTUAL_ENV)
+        bash("uv run pytest", cwd=root, env=_CLEAR_VIRTUAL_ENV)
