@@ -2,7 +2,7 @@
 
 The python repo-lifecycle devkit — workspace locking (`lock-python`), the preflight verb (the fixed Python battery), and the canonical ruff configuration with its sync verb and drift gate, per the tooling-consolidation program. Purely python-domain by charter: no CI runner floor, no platform knowledge — runner provisioning and workflow structure live in the platform binding.
 
-Config surfaces org-wide follow one law (home: release-devkit's `AGENTS.md`, which carries the per-devkit table and the strict-loading semantics): python-devkit is the one pyproject-table devkit — its config lives in consumers' `[tool.python-devkit.*]` tables, because its subject is the Python workspace. This repo itself is published by root `release-devkit.yaml`.
+Config surfaces org-wide follow one law (home: github-actions-toolkit's `AGENTS.md`, which carries the per-devkit table and the strict-loading semantics): python-devkit is the one pyproject-table devkit — its config lives in consumers' `[tool.python-devkit.*]` tables, because its subject is the Python workspace. This repo itself is published by root `release-devkit.yaml`.
 
 The package is `python_devkit` (src-layout under `src/python_devkit/`); all dependencies resolve from PyPI (`bashrun`, `pydantic`, `typer`; git-source pins only in scratch branches testing unreleased changes).
 
@@ -16,7 +16,7 @@ Entry points (`[project.scripts]`): `lock-python` → `lock_python.py:app`, `pre
 
 `sync_ruff.py` writes the org-canonical ruff config (`src/python_devkit/ruff.base.toml`, shipped as package data) into a consuming repo's root as `ruff.base.toml`; `--check` is the drift gate (byte compare against the packaged canonical). The verb also validates the consuming repo's `ruff.toml` layer: it must set `extend = "ruff.base.toml"` and use only extend keys — plain `exclude`/`lint.select`/`lint.ignore`/`lint.per-file-ignores` in the layer replace the canonical settings under `extend` and fail the check. This repo consumes its own canonical the same way: root `ruff.base.toml` is a verb-written copy of the packaged one, root `ruff.toml` is the (currently empty) local layer.
 
-Consumers run `preflight-python` via the python-devkit PyPI dependency (`uv run preflight-python`, version-sourced by the consumer's `uv.lock`) — except bashrun, which python-devkit runtime-depends on and therefore cannot take it as a dependency (uv rejects the name-shadowing as a self-dependency); it consumes it through a sidecar virtual project (`uv run --project tools/devkit preflight-python`) whose different root name breaks the shadowing (see bashrun's `AGENTS.md`). This repo is the self-preflight exception: its own `integrate.yml` preflight runs `uv run preflight-python` inline (it *is* python-devkit, testing local code). Repo-specific toggles live in each repo's `[tool.python-devkit.preflight]` table, never in workflow inputs.
+Consumers run `preflight-python` via the python-devkit PyPI dependency (`uv run preflight-python`, version-sourced by the consumer's `uv.lock`) — except bashrun, which python-devkit runtime-depends on and therefore cannot take it as a dependency (uv rejects the name-shadowing as a self-dependency); it consumes it through a sidecar virtual project (`uv run --project tools/devkit preflight-python`) whose different root name breaks the shadowing (see bashrun's `AGENTS.md`). This repo is the self-preflight exception: the harness-invoked `scripts/preflight.py` runs `uv run --locked preflight-python` (it *is* python-devkit, testing local code — no dependency, no sidecar). Repo-specific toggles live in each repo's `[tool.python-devkit.preflight]` table, never in workflow inputs.
 
 ## Constraints
 
@@ -29,8 +29,9 @@ Consumers run `preflight-python` via the python-devkit PyPI dependency (`uv run 
 
 ## Release flow
 
-release-devkit's `AGENTS.md` owns the three-workflow contract; this repo follows it unchanged. Repo-specific facts: this repo is the self-preflight exception — its own `integrate.yml` runs `uv run preflight-python` inline (it *is* python-devkit, testing local code) — and API-breaking changes ship with a manually bumped `major_minor` (patch-auto assumes additive changes). bashrun consumes this package through its `tools/devkit` sidecar (name-shadowing; see its `AGENTS.md`); every other consumer declares it as a plain dependency.
+github-actions-toolkit's `AGENTS.md` owns the consumer workflow contract; this repo follows it unchanged. Repo-specific facts: this repo is the self-preflight exception — `scripts/preflight.py` runs `uv run --locked preflight-python` (it *is* python-devkit, testing local code) — and API-breaking changes ship with a manually bumped `major_minor` (patch-auto assumes additive changes). bashrun consumes this package through its `tools/devkit` sidecar (name-shadowing; see its `AGENTS.md`); every other consumer declares it as a plain dependency.
 
 ## See also
 
 - [`bashrun`](https://github.com/outernet-foundation/bashrun) — the subprocess wrapper the battery's shell-outs run through.
+- [`github-actions-toolkit`](https://github.com/outernet-foundation/github-actions-toolkit) — the platform binding whose consumer workflow contract this repo follows.
