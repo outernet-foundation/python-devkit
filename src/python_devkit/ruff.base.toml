@@ -45,6 +45,15 @@ ignore = [
     # TODO/FIXME comment formatting
     "TD",
     "FIX",
+    # ASYNC119 (yield in context manager in async generator) — fires on the framework
+    # dependency-injection idiom (`async with session.begin(): yield session` in FastAPI/
+    # Litestar get_session generators), which the framework closes correctly via aclose;
+    # no convention yet distinguishes those from ad-hoc generators where the warning is real
+    "ASYNC119",
+    # PLW0717 (too many statements in try clause) — the sanctioned long-lived-loop boundary
+    # shape (broad catch, log, continue) exceeds the count by construction; no convention
+    # yet for which statements belong in helper extraction
+    "PLW0717",
 
     # The "Ticket N" blocks below are the transitional cleanup slices tracked
     # by PLE-248 (Enforce the deferred ruff rules):
