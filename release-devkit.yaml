@@ -1,7 +1,6 @@
-ci_workflow: release.yml
 packages:
   python-devkit:
     path: .
     major_minor: "0.3"
-    registries:
-      pypi: python-devkit
+    registry: pypi
+    identity: python-devkit
